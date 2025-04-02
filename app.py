@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import psutil
 import time
 
@@ -30,6 +31,40 @@ st.line_chart(st.session_state.usoMemoria)
 st.header("Uso da CPU (%)")
 st.line_chart(st.session_state.usoCPU)
 
-time.sleep(1)
+st.header("Processos")
 
+processos = psutil.process_iter()
+
+tabela = """
+    <table>
+        <thead>
+            <th>PID</th>
+            <th>Nome</th>
+            <th>Usuário</th>
+            <th>%CPU</th>
+            <th>%MEM</th>
+            <th></th>
+        </thead>
+        <tbody>
+"""
+
+for processo in processos:
+    tabela += f"""
+        <tr>
+            <td>{processo.pid}</td>
+            <td>{processo.name()}</td>
+            <td>{processo.username()}</td>
+            <td>{round(processo.cpu_percent(), 2)}</td>
+            <td>{round(processo.memory_percent(), 2)}</td>
+        </tr>
+    """
+
+tabela += """
+        </tbody>
+    </table>
+"""
+
+st.html(tabela)
+
+time.sleep(1)
 st.rerun()
