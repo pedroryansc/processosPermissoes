@@ -1,7 +1,5 @@
 import streamlit as st
-import pandas as pd
-import psutil
-import time
+import psutil, os, stat, signal, time
 
 if("usoMemoria" not in st.session_state):
     st.session_state.usoMemoria = []
@@ -33,6 +31,16 @@ st.line_chart(st.session_state.usoCPU)
 
 st.header("Processos")
 
+with st.form("excluirProcesso"):
+    pid = st.number_input("Insira o PID do processo para exclui-lo", value=0)
+
+    excluir = st.form_submit_button("Excluir")
+
+    if(excluir):
+        # processo = psutil.Process(pid)
+        # os.chmod(processo.exe(), stat.S_IRWXO)
+        os.kill(pid, signal.SIGKILL)
+
 processos = psutil.process_iter()
 
 tabela = """
@@ -49,15 +57,18 @@ tabela = """
 """
 
 for processo in processos:
-    tabela += f"""
-        <tr>
-            <td>{processo.pid}</td>
-            <td>{processo.name()}</td>
-            <td>{processo.username()}</td>
-            <td>{round(processo.cpu_percent(), 2)}</td>
-            <td>{round(processo.memory_percent(), 2)}</td>
-        </tr>
-    """
+    try:
+        tabela += f"""
+            <tr>
+                <td>{processo.pid}</td>
+                <td>{processo.name()}</td>
+                <td>{processo.username()}</td>
+                <td>{round(processo.cpu_percent(), 2)}</td>
+                <td>{round(processo.memory_percent(), 2)}</td>
+            </tr>
+        """
+    except psutil.NoSuchProcess:
+        pass
 
 tabela += """
         </tbody>
